@@ -2,7 +2,7 @@ from _thread import *
 from socket import *
 import os, sys
 
-HOST = '192.168.1.36'
+HOST = '127.0.0.1'
 PORT = 5000
 
 rooms = {}
