@@ -1,4 +1,4 @@
-from socket import *
+from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import os, sys, threading
 
@@ -10,16 +10,14 @@ def on_new_client(clientsocket, addr, room):
         try:
             msg = clientsocket.recv(1024).decode('utf-8')
             _, port = addr
-            if msg != 'quit':
-                print(str(port) + ' -> ' + room + ' >> ' + str(msg))
+            if len(msg) > 0:
+                print('[%d] %s >> %s' %(port, room, msg))
                 boardcast(msg, room)
             else:
-                print(str(port) + ' disconnected!')
                 break
         except BlockingIOError:
             pass
         except:
-            print('disconnect')
             break
     rooms[room].remove(clientsocket)
     clientsocket.close()
@@ -29,43 +27,64 @@ def boardcast(msg, room):
         for client in rooms[room]:
             client.send(msg.encode('utf-8'))
     else:
-        print('Error not found room')
+        print('[ERROR] Not found room')
 
+def closeClient():
+    for room in rooms.keys():
+        for client in rooms[room]:
+            client.close()
+
+def quit():
+    try:
+        sys.exit(0)
+    except SystemExit:
+        os._exit(0)
 
 def main():
     HOST = '127.0.0.1'
     PORT = 5000
+    
+    if (len(sys.argv) == 2):
+        if (':' in sys.argv[1]):
+            HOST = str(sys.argv[1].split(':')[0])
+            try:
+                PORT = int(sys.argv[1].split(':')[1])
+            except ValueError:
+                print('[ERROR] Port is invalid!')
+                quit()
+    
     s = socket(AF_INET, SOCK_STREAM)
     serv_sock_addr = (HOST, PORT)
-    s.bind(serv_sock_addr)
-    s.listen(0)
-    s.setblocking(0)
-    print('Broker is running on ' + str(HOST) + ':' + str(PORT))
 
+    try:
+        s.bind(serv_sock_addr)
+        s.listen(0)
+        s.setblocking(0)
+    except Exception as e:
+        print('[ERROR]', e)
+        quit()
+
+    print('Broker is running on %s:%d...' % (str(HOST), PORT))
 
     while True:
         try:
             c, addr = s.accept()
             room = c.recv(1024).decode('utf-8')
-            print(room)
             if room not in rooms:
-                rooms[room] = []
+                rooms[room] = [] # create new room
             rooms[room].append(c)
 
             try:
                 Thread(target=on_new_client, args=(c, addr, room)).start()
             except:
-                print('errrrrrrr')
+                print('[ERROR] Cannot create the new Thread')
         except BlockingIOError:
             pass
 
 if __name__ == '__main__' :
     try:
         main()
-
     except KeyboardInterrupt:
-        print('Shut down server...')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+        print('Shut down broker...')
+        closeClient()
+        quit()
