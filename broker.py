@@ -12,7 +12,7 @@ def on_new_client(clientsocket, addr, room):
             _, port = addr
             if len(msg) > 0:
                 print('[%d] %s >> %s' %(port, room, msg))
-                boardcast(msg, room)
+                boardcast(msg, port, room)
             else:
                 break
         except BlockingIOError:
@@ -22,10 +22,12 @@ def on_new_client(clientsocket, addr, room):
     rooms[room].remove(clientsocket)
     clientsocket.close()
 
-def boardcast(msg, room):
+def boardcast(msg, port, room):
+    reMsg = str(port) + ':' + msg
     if room in rooms:
         for client in rooms[room]:
-            client.send(msg.encode('utf-8'))
+            client.send(reMsg.encode('utf-8'))
+            # print(client)
     else:
         print('[ERROR] Not found room')
 
