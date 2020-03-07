@@ -1,10 +1,15 @@
 from socket import *
+import os, sys
 
 
 SERV_PORT = 5000
 
 def main():
-    cli_type, addr, room = input('>> ').split()
+    try:
+        cli_type, addr, room = input('>> ').split()
+    except:
+        print('invalid')
+        pass
     serv_sock_addr = (addr, SERV_PORT)
     cs = socket(AF_INET, SOCK_STREAM)
     cs.connect(serv_sock_addr)
@@ -34,4 +39,11 @@ def subscribe(cs, room):
     cs.close()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupt connection')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
