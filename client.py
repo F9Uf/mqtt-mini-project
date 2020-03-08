@@ -1,13 +1,11 @@
 from socket import *
 import os, sys
 
-
-
 def main():
     SERV_PORT = 5000
     HOST = '127.0.0.1'
     while True:
-        cs = socket(AF_INET, SOCK_STREAM)
+        cs = socket(AF_INET, SOCK_STREAM) # create new socket
         print('[NOTE] Please connect socket with `pub` or `sub`')
         while True:
             try:
@@ -24,7 +22,7 @@ def main():
                     try:
                         SERV_PORT = int(addr.split(':')[1])
                     except ValueError:
-                        print('[ERROR] Port is invalid!')
+                        print('[ERROR] Port is invalid!') # if cannot convert port to integer
                         continue
                 else:
                     HOST = str(addr)
@@ -32,10 +30,10 @@ def main():
             except IndexError:
                 print('[ERROR] Invalid argument. Please Type `{pub/sub} {ip-broker}:{port-broker}? {topic-name} {message}?`')
                 pass
-        serv_sock_addr = (HOST, SERV_PORT)
+        serv_sock_addr = (HOST, SERV_PORT) # create new tuple
 
         try:
-            cs.connect(serv_sock_addr)
+            cs.connect(serv_sock_addr) # connect broker socket
         except ConnectionRefusedError:
             print('[ERROR] Can\'t connect broker')
             continue
@@ -43,13 +41,14 @@ def main():
             print('[ERROR] Can\'t connect broker2')
             continue
 
-        cs.setblocking(0)
+        cs.setblocking(0) # set socket with
+
         if cli_type == 'publish' or cli_type == 'pub':
             publish(cs, room, msg)
         elif cli_type == 'subscribe' or cli_type == 'sub':
             subscribe(cs, room)
         print('')
-    cs.close()
+    cs.close() # close connection socket
 
 def publish(cs, room, msg):
     reMsg = 'pub ' + str(room) + ' ' + str(msg)
@@ -62,11 +61,10 @@ def subscribe(cs, room):
     print('Subscribe room %s...' %(room))
     while True:
         try:
-            res = cs.recv(1024).decode('utf-8')
+            res = cs.recv(1024).decode('utf-8') # recv message from broker
             if len(res) > 0:
-                port, msg = res.split(':')
+                port, msg = res.split(':') # example 5712:helloworld
                 print('[%s] %s >> %s' %(port, room, msg))
-                # print(res)
             else:
                 print('[ERROR] Broker is shutting down!')
                 break

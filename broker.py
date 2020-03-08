@@ -9,7 +9,7 @@ def on_new_client(clientsocket, addr):
     room = ''
     while True:
         try:
-            cliMsg = clientsocket.recv(1024).decode('utf-8').split()
+            cliMsg = clientsocket.recv(1024).decode('utf-8').split() # recv command from client
             cliType = cliMsg[0]
             cliRoom = cliMsg[1]
             room = cliRoom
@@ -25,19 +25,21 @@ def on_new_client(clientsocket, addr):
                 msg = cliMsg[2]
                 if len(msg) > 0:
                     print('[%d] %s >> %s' %(port, cliRoom, msg))
-                    boardcast(msg, port, cliRoom)
+                    broadcast(msg, port, cliRoom) # broadcast message
                 else:
                     break
         except BlockingIOError:
             pass
         except:
             break
+    # remove subscriber out of room
     if room in rooms:
         if clientsocket in rooms[room]:
             rooms[room].remove(clientsocket)    
     clientsocket.close()
 
-def boardcast(msg, port, room):
+# broadcast to all client in the room
+def broadcast(msg, port, room):
     reMsg = str(port) + ':' + msg
     if room in rooms:
         for client in rooms[room]:
@@ -61,6 +63,7 @@ def main():
     HOST = '127.0.0.1'
     PORT = 5000
     
+    # initial HOST and PORT
     if (len(sys.argv) == 2):
         if (':' in sys.argv[1]):
             HOST = str(sys.argv[1].split(':')[0])
@@ -72,13 +75,13 @@ def main():
         else:
             HOST = str(sys.argv[1])
     
-    s = socket(AF_INET, SOCK_STREAM)
-    serv_sock_addr = (HOST, PORT)
+    s = socket(AF_INET, SOCK_STREAM) # create socket
+    serv_sock_addr = (HOST, PORT) # create tuple 
 
     try:
-        s.bind(serv_sock_addr)
-        s.listen(0)
-        s.setblocking(0)
+        s.bind(serv_sock_addr) # bind HOST and PORT
+        s.listen(0) # listen for connect socket with 0 queue
+        s.setblocking(0) # set nonblocking
     except Exception as e:
         print('[ERROR]', e)
         quit()
@@ -87,10 +90,10 @@ def main():
 
     while True:
         try:
-            c, addr = s.accept()
+            c, addr = s.accept() # accept new client connect
 
             try:
-                Thread(target=on_new_client, args=(c, addr)).start()
+                Thread(target=on_new_client, args=(c, addr)).start() # create new thread
             except:
                 print('[ERROR] Cannot create the new Thread')
         except BlockingIOError:
