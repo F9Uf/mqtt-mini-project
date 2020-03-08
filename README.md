@@ -15,9 +15,24 @@ NOTE: `port-broker` is optional, default 5000
 ### Run Client
 ```
 $ python client.py
-$ {type-connection} {ip-broker}:{port-broker}? {room-topic}
+$ {type-connection} {ip-broker}:{port-broker}? {room-topic} {message}?
 ```
 NOTE: `type-connection`: *publish* or *subscribe*, alias name is *pub* and *sub*
 
 NOTE: `port-broker` is optional, default 500
+
+NOTE: `message` allow only publish type
+
+
+## Syntax
+
+Client --> Broker
+```
+{pub/sub} {room} {message}?only publish
+```
+
+Broker --> Client
+```
+{port}:{message}
+```
 
