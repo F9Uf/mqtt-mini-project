@@ -29,7 +29,7 @@ def main():
                 else:
                     HOST = str(addr)
                 break
-            except ValueError:
+            except IndexError:
                 print('[ERROR] Invalid argument. Please Type `{pub/sub} {ip-broker}:{port-broker}? {topic-name} {message}?`')
                 pass
         serv_sock_addr = (HOST, SERV_PORT)
