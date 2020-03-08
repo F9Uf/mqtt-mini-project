@@ -54,6 +54,8 @@ def main():
             except ValueError:
                 print('[ERROR] Port is invalid!')
                 quit()
+        else:
+            HOST = str(sys.argv[1])
     
     s = socket(AF_INET, SOCK_STREAM)
     serv_sock_addr = (HOST, PORT)
