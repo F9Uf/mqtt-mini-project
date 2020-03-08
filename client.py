@@ -38,10 +38,10 @@ def main():
             cs.connect(serv_sock_addr)
         except ConnectionRefusedError:
             print('[ERROR] Can\'t connect broker')
-            break
+            continue
         except OSError:
             print('[ERROR] Can\'t connect broker2')
-            break
+            continue
 
         cs.setblocking(0)
         if cli_type == 'publish' or cli_type == 'pub':
