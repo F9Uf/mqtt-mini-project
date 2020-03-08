@@ -19,6 +19,8 @@ def main():
                     except ValueError:
                         print('[ERROR] Port is invalid!')
                         continue
+                else:
+                    HOST = str(addr)
                 break
             except ValueError:
                 print('[ERROR] Invalid argument. Please Type `{pub/sub} {ip-broker} {topic-name}`')
@@ -30,7 +32,11 @@ def main():
             cs.send(room.encode('utf-8'))
         except ConnectionRefusedError:
             print('[ERROR] Can\'t connect broker')
-            pass
+            # pass
+            break
+        except OSError:
+            print('[ERROR] Can\'t connect broker2')
+            break
 
         cs.setblocking(0)
         if cli_type == 'publish' or cli_type == 'pub':
