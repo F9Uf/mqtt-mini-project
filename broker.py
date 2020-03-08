@@ -5,21 +5,36 @@ import os, sys, threading
 
 rooms = dict()
 
-def on_new_client(clientsocket, addr, room):
+def on_new_client(clientsocket, addr):
+    room = ''
     while True:
         try:
-            msg = clientsocket.recv(1024).decode('utf-8')
+            cliMsg = clientsocket.recv(1024).decode('utf-8').split()
+            cliType = cliMsg[0]
+            cliRoom = cliMsg[1]
+            room = cliRoom
             _, port = addr
-            if len(msg) > 0:
-                print('[%d] %s >> %s' %(port, room, msg))
-                boardcast(msg, port, room)
-            else:
-                break
+            
+            # join room only subscribe
+            if cliType == 'sub':
+                if cliRoom not in rooms:
+                    rooms[cliRoom] = []
+                rooms[cliRoom].append(clientsocket)
+
+            elif cliType == 'pub':
+                msg = cliMsg[2]
+                if len(msg) > 0:
+                    print('[%d] %s >> %s' %(port, cliRoom, msg))
+                    boardcast(msg, port, cliRoom)
+                else:
+                    break
         except BlockingIOError:
             pass
         except:
             break
-    rooms[room].remove(clientsocket)
+    if room in rooms:
+        if clientsocket in rooms[room]:
+            rooms[room].remove(clientsocket)    
     clientsocket.close()
 
 def boardcast(msg, port, room):
@@ -73,13 +88,9 @@ def main():
     while True:
         try:
             c, addr = s.accept()
-            room = c.recv(1024).decode('utf-8')
-            if room not in rooms:
-                rooms[room] = [] # create new room
-            rooms[room].append(c)
 
             try:
-                Thread(target=on_new_client, args=(c, addr, room)).start()
+                Thread(target=on_new_client, args=(c, addr)).start()
             except:
                 print('[ERROR] Cannot create the new Thread')
         except BlockingIOError:
